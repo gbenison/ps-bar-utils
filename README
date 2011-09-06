@@ -1,0 +1,48 @@
+ps-bar-utils: A postscript library for drawing bar charts, with error bars
+(c) Greg Benison, 2011
+
+You use the file by importing 'bar-utils.ps' into a postscript file.
+See file 'example-1.ps' for a demonstration of usage.
+
+The API consists of the following functions (arguments given first, the way they would
+be passed in postscript postfix notation):
+
+<y> <dy> bar               % Append a bar to the graph of height 'y' and error 'dy'
+
+         next-category     % Switch to a new category.  The value of /category-name will be
+                           % applied as a label to the just-closed category.
+
+   <msg> legend            % Append a legend entry.  <msg> is either a string or a procedure
+                           % which draws some kind of label.
+
+ <label> plot-label        % draw a label at the top of the plot
+
+ <label> y-label           % Apply a label to the Y axis.  <label> can be either a string or
+                           % a procedure which draws the label.
+
+<delta> y-tic-with-interval % Draw tic marks every 'delta' positions along the y-axis.
+
+In addition there are symbols whose definition can be changed to alter the plot appearance.  These
+appear at the top of bar-utils.ps.  See the example for usage.
+
+barstyles           -- This array controls bar appearance; see definition in file
+bar-width
+bar-margin
+category-margin
+world-y-max
+world-y-min
+plot-height
+category-name
+crossbar-linewidth
+crossbar-width
+tic-font
+tic-length
+label-font
+legend-margin-x
+legend-top-margin
+legend-dy
+legend-box-size
+y-label-margin
+plot-label-font
+plot-label-margin-x
+plot-label-margin-y

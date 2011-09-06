@@ -1,0 +1,224 @@
+% GCB 4sep11
+%
+% utilities for building bar charts.
+%
+
+/inch {72 mul} def
+
+% default font.
+/Helvetica findfont 8 scalefont setfont
+
+% parameters affecting bar graph appearance.
+/bar-width           10 def
+/bar-margin          2 def    % Spacing between bars in a single category.
+/category-margin     15 def    % Spacing between categories.
+/world-y-max         10000 def
+/world-y-min         0 def
+/plot-height         3 inch def
+/category-name       () def
+/crossbar-linewidth  0.5 def
+/crossbar-width      8 def
+/tic-font            /Helvetica findfont 8 scalefont def
+/tic-length          -5 def
+/label-font          /Helvetica findfont 10 scalefont def
+/legend-margin-x     15 def
+/legend-top-margin   20 def
+/legend-dy           15 def
+/legend-box-size     10 def
+/y-label-margin      50 def
+/plot-label-font     /Helvetica findfont 11 scalefont def
+/plot-label-margin-x  0 def
+/plot-label-margin-y 10 def
+
+% ------------- utilities ----------------
+
+% Get element 'n mod l' from 'array', where 'l' is length
+% of array (i.e. cycle through array elements.)
+/getmod { % array n getmod x
+    exch dup length % n array length
+    3 -1 roll exch  % array n length
+    mod get
+} def
+
+% Convert 'y' value in 'world' coordinates to 'view' coordinates
+/worldtoview { % y worldtoview y'
+    world-y-min sub
+    world-y-max world-y-min sub div
+    plot-height mul
+} def
+
+/lesser-of  { 2 copy gt {exch} if pop } def
+/greater-of { 2 copy lt {exch} if pop } def
+
+% if the argument is an integer, convert it to integer type,
+% otherwise no-op
+/trim-integer {
+    dup dup cvi eq {cvi} if
+} def
+
+/string-center { % str string-center -
+    dup string-center-moveto show
+} def
+
+/string-center-moveto { % str string-center-moveto -
+    stringwidth pop -0.5 mul 0 rmoveto
+} def
+
+/string-right-justify {
+    dup stringwidth pop -1 mul 0 rmoveto show
+} def
+
+
+% ------------ bar graphs -------------------------
+
+/bar-state-dict 20 dict def
+
+/reset-bar-state {
+    bar-state-dict begin
+    /category-idx 0 def
+    /bar-idx 0 def
+    /legend-idx 0 def
+    /bar-x-orig bar-width 2 div bar-margin add def
+    /category-x-orig 0 def
+    /category-x-max 0 def
+    end
+} def
+reset-bar-state
+
+/default-barstyles [
+    << % style 1
+	/bar-paint-1 {}
+	/bar-paint-2 {rectstroke}
+    >>
+    
+    << % style 2
+	/bar-paint-1 {0.5 setgray rectfill}
+	/bar-paint-2 {rectstroke}
+    >>
+
+    << % style 3
+	/bar-paint-1 {0.3 0.1 0.7 setrgbcolor rectfill}
+	/bar-paint-2 {rectstroke}
+    >>
+    
+    ] def
+
+/barstyles default-barstyles def
+
+% Draw a bar in the current category using the current barstyle;
+% subsequent calls will append another bar to the same category and
+% increment the barstyle
+/bar { % y dy bar
+    bar-state-dict begin
+    barstyles bar-idx getmod begin
+    /dy exch def
+    /y exch def
+    % draw main bar
+    bar-x-orig bar-width 2 div sub 0
+    bar-width y worldtoview
+    4 copy
+    gsave bar-paint-1 grestore
+    gsave bar-paint-2 grestore
+    % draw crossbars
+    gsave
+    crossbar-linewidth setlinewidth
+    0 setgray
+    bar-x-orig y dy 2 div sub worldtoview moveto
+    gsave crossbar-width -0.5 mul 0 rmoveto crossbar-width 0 rlineto stroke grestore
+    bar-x-orig y dy 2 div add worldtoview lineto
+    gsave crossbar-width -0.5 mul 0 rmoveto crossbar-width 0 rlineto stroke grestore
+    stroke
+    grestore
+    end % barstyle
+    /category-x-max bar-x-orig def
+    /bar-idx bar-idx 1 add def
+    /bar-x-orig bar-x-orig bar-width add bar-margin add def
+    end % bar-state-dict
+} def
+
+%
+% 'close-out' this category by applying a category label,
+% then add a margin between categories.
+%
+/next-category {
+    bar-state-dict begin
+    gsave
+      label-font setfont
+      category-x-orig category-x-max add 2 div 0 translate
+      -90 rotate
+      5 -4 moveto
+      category-name show
+    grestore
+    /bar-idx 0 def
+    /bar-x-orig bar-x-orig category-margin add def
+    /category-x-orig bar-x-orig def
+    end
+} def
+
+/y-tic { % min delta max y-tic -
+    0 world-y-min worldtoview moveto
+    0 world-y-max worldtoview lineto stroke
+{
+   dup worldtoview 0 exch moveto
+   gsave
+      tic-font setfont
+      trim-integer
+      5 string cvs
+      dup stringwidth pop -1 mul 0 rmoveto
+      -10 -5 rmoveto show
+   grestore
+   tic-length 0 rlineto stroke
+} for } def
+
+% label the entire Y axis starting at the nearest integral multiple of 'interval'
+/y-tic-with-interval { % interval y-tic-with-interval -
+   /y-interval exch def
+   world-y-min world-y-max lesser-of
+   y-interval div ceiling y-interval mul
+   y-interval
+   world-y-min world-y-max greater-of
+   y-tic
+} def
+
+/y-label { % msg y-label
+    gsave
+    label-font setfont
+    0 plot-height 2 div translate 90 rotate
+    0 y-label-margin moveto
+    string-center
+    grestore
+} def
+
+/plot-label { % msg plot-label
+    gsave
+    plot-label-font setfont
+    plot-label-margin-x plot-height plot-label-margin-y add moveto
+    show
+    grestore
+} def
+
+%% Draw a legend entry.
+%% Cycle through bar styles, just as for drawing bars; paint a box
+%% next to the legend label in the same style as the bar
+/legend { % msg legend
+    gsave
+    mark
+    bar-state-dict begin
+    barstyles legend-idx getmod begin
+    category-x-max legend-margin-x add % legend x
+    plot-height legend-top-margin sub  % legend y
+    moveto
+    0 legend-dy legend-idx mul -1 mul rmoveto
+    % draw box
+    currentpoint legend-box-size dup gsave bar-paint-1 grestore
+    currentpoint legend-box-size dup gsave bar-paint-2 grestore
+    % draw the label
+    cleartomark
+    legend-box-size 3 add 0 rmoveto
+    label-font setfont
+    show
+    end % barstyle
+    /legend-idx legend-idx 1 add def
+    end % bar-state-dict
+    grestore
+} def

@@ -1,0 +1,71 @@
+%!PS-Adobe-2.0
+%%BoundingBox: 0 0 400 400
+
+% GCB 6sep11
+%
+% Demonstration file for ps-bar-utils library.
+% As seen in the examples below,
+% The interface consists mainly of the functions
+% 'bar' and 'next-category', which are used to add bars to
+% the plot in groups, and various annotation functions:
+% 'plot-label', 'y-label', 'legend', 'y-tic-with-interval'.
+%
+
+% import the library.
+(bar-utils.ps) run
+  
+% defaults are provided for these; overrides illustrated here.
+/bar-width        10 def
+/bar-margin        2 def    % Spacing between bars in a single category.
+/category-margin  15 def    % Spacing between categories.
+/world-y-max    8000 def
+/world-y-min       0 def
+/plot-height  3 inch def
+% /label-font label-font 1.2 scalefont def
+
+1 inch dup translate
+
+2000 y-tic-with-interval
+(pVSAPR) plot-label
+(B-gal activity, M.U.) y-label
+
+% ---------- Bars are grouped together into 'categories' -------------
+% The following data is taken from Mellies lab b-gal assays.
+% Each category corresponds to a strain: MC4100, MC4100delZntR, MC4100delZur.
+% Within each category, bars in the series correspond to zinc concentrations.
+%
+
+/category-name (MC4100 2-13) def
+2462	139	bar % 	MC4100	bla	Zn =	0	Kat Thomas	2011-02-13	0.29
+2461	174	bar % 	MC4100	bla	Zn =	0.3	Kat Thomas	2011-02-13	0.28
+next-category
+
+/category-name (MC4100 5-11) def
+5109	305	bar % 	MC4100	bla	Zn =	0	Jay Mellies	2011-05-11	0.38
+2166	124	bar % 	MC4100	bla	Zn =	0.3	Jay Mellies	2011-05-11	0.25
+next-category
+
+/category-name (MC4100 8-24) def
+4247	32	bar % 	MC4100	bla	Zn =	0	Greg Benison	2011-08-24	0.344
+159	103	bar % 	MC4100	bla	Zn =	0.3	Greg Benison	2011-08-24	0.242
+next-category
+
+/category-name (MC4100 8-26) def
+3272	85	bar % 	MC4100	bla	Zn =	0	Greg Benison	2011-08-26	0.44
+4595	107	bar % 	MC4100	bla	Zn =	0.3	Greg Benison	2011-08-26	0.434
+next-category
+
+/category-name (SIP812) def
+3434	454	bar % 	SIP812	bla	Zn =	0	Kat Thomas	2011-03-07	0.45
+2523	102	bar % 	SIP812	bla	Zn =	0.5	Kat Thomas	2011-03-07	0.26
+next-category
+
+/category-name (TB742) def
+4896	29	bar % 	TB742	bla	Zn =	0	Jay Mellies	2011-05-11	0.54
+623	206	bar % 	TB742	bla	Zn =	0.3	Jay Mellies	2011-05-11	0.22
+next-category
+
+(- Zn) legend
+(+ Zn) legend
+
+showpage
